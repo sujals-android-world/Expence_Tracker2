@@ -1,4 +1,4 @@
-package com.example.expencetracker2.presentation.transaction
+package com.example.expencetracker2.presentation.transaction.screens
 
 // Compose Runtime & State
 
@@ -67,7 +67,7 @@ import com.example.expencetracker2.data.tracsaction.local.seed.DatabaseSeedData.
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
     @Composable
     fun AddExpenseScreen(
-        onSaveClick: (amount: Double, subCategoryId: Long?, mainCategoryId : Long, note: String?, paymentMode: String, isSynced: Boolean, isSpeedExpense: Boolean) -> Unit,
+        onSaveClick: (amount: Double, popularId: Long?, regularId : Long?, mainCategoryId : Long, note: String?, paymentMode: String, isSynced: Boolean, isSpeedExpense: Boolean) -> Unit,
         onBackClick: () -> Unit
     ) {
         // States for inputs
@@ -77,7 +77,6 @@ import com.example.expencetracker2.data.tracsaction.local.seed.DatabaseSeedData.
         var isSpeedExpense by remember { mutableStateOf(false) }
         var isAmountFocused by remember { mutableStateOf(false) }
         var selectedCategoryId by remember { mutableLongStateOf(1L) }
-        var selectedSubCategoryId by remember { mutableStateOf<Long?>(null) }
 
         // Constant values as per your requirement
         val isSynced = false
@@ -257,7 +256,7 @@ import com.example.expencetracker2.data.tracsaction.local.seed.DatabaseSeedData.
                 Button(
                     onClick = {
                         val finalAmount = amount.toDoubleOrNull() ?: 0.0
-                        onSaveClick( finalAmount, selectedSubCategoryId,selectedCategoryId , note.ifBlank { null }, paymentMode, isSynced, isSpeedExpense)
+                        onSaveClick( finalAmount, null,null,selectedCategoryId , note.ifBlank { null }, paymentMode, isSynced, isSpeedExpense)
                         Toast.makeText(context, "$amount Inserted", Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier

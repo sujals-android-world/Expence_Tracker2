@@ -11,13 +11,17 @@ data class TransactionEntity(
     val id: String = UUID.randomUUID().toString(),
 
     val amount: Double,
-    val subCategoryId: Long? = null,
-    val masterCategoryId : Long,
+    val popularCategoryId: Long? = null,
+    val regularCategoryId: Long? = null,
+    val masterCategoryId: Long,
 
     val timestamp: Long,
     val note: String? = null,
     val paymentMode : String = "UPI",
 
     val isSynced : Boolean = false,
-    val isSpeedExpense : Boolean = true
+    val isSpeedExpense : Boolean = true,
+    val isExpense : Boolean = true,
+    val isIncome : Boolean = false,
+    val  isTransfer : Boolean = false
 )

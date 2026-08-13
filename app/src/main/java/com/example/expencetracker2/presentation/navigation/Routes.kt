@@ -14,4 +14,6 @@ object Routes {
 
     const val CustomizeQuickAccessScreen = "CustomizeQuickAccessScreen"
 
+    const val PremiumUserdashBoard = "PremiumUserdashBoard"
+
 }

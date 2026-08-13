@@ -8,10 +8,11 @@ import androidx.navigation.compose.composable
 import com.example.expencetracker2.presentation.auth.AuthViewModel
 import com.example.expencetracker2.presentation.auth.SignInScreen
 import com.example.expencetracker2.presentation.auth.SignUpScreen
-import com.example.expencetracker2.presentation.transaction.AddExpenseScreen
-import com.example.expencetracker2.presentation.transaction.CustomizeQuickAccessScreen
+import com.example.expencetracker2.presentation.transaction.screens.AddExpenseScreen
+import com.example.expencetracker2.presentation.transaction.screens.CustomizeQuickAccessScreen
 import com.example.expencetracker2.presentation.transaction.TransactionViewModel
 import com.example.expencetracker2.presentation.transaction.bottomScreen.MainScreen
+import com.example.expencetracker2.presentation.transaction.screens.PremiumUserDashBoard
 
 
 @Composable
@@ -71,10 +72,11 @@ fun AppNavigation(
             MainScreen(onAddClick = {
                 navHostController.navigate(Routes.AddExpenseScreen)
             }
-                , onCategorySelected = {}, onQuickSaveClick = { finalAmount, catId, note, mode ->
+                , onCategorySelected = {}, onQuickSaveClick = { finalAmount,catId, popularId, regularId, note, mode ->
                 transactionViewModel.insertTransaction(
                     amount = finalAmount,
-                    subCategoryId = null,
+                    popularCategoryId = popularId,
+                    regularCategoryId = regularId,
                     masterCategoryId = catId,
                     note = note,
                     paymentMode = mode,
@@ -84,7 +86,11 @@ fun AppNavigation(
             }
             , onCustomizeClick = {
                 navHostController.navigate(Routes.CustomizeQuickAccessScreen)
-            }
+            },
+                transactionViewModel  = transactionViewModel,
+                onPremiumUserDashBoardClick = {
+                    navHostController.navigate(Routes.PremiumUserdashBoard)
+                }
             )
         }
         composable(Routes.AddExpenseScreen) {
@@ -92,11 +98,12 @@ fun AppNavigation(
                 onBackClick = {
                     navHostController.popBackStack()
                 },
-                onSaveClick = { amount, subCategoryId, masterCategoryId, note, paymentMode, isSynced, isSpeedExpense ->
+                onSaveClick = { amount, popularId,regularId, masterCategoryId, note, paymentMode, isSynced, isSpeedExpense ->
                     transactionViewModel.insertTransaction(
                         amount,
-                        subCategoryId,
                         masterCategoryId,
+                        popularId,
+                        regularId,
                         note,
                         paymentMode,
                         isSynced,
@@ -115,6 +122,18 @@ fun AppNavigation(
                         }
                     }
                 },
+            )
+        }
+        composable(Routes.PremiumUserdashBoard) {
+            PremiumUserDashBoard(
+                transactionViewModel = transactionViewModel,
+                onBackClick = {
+                    navHostController.popBackStack()
+                },
+                onAccountClick = {  },
+                onAddAccountSave = { name, icon, balance, accountType, isPrimary , linkedBankId->
+                    transactionViewModel.insertAccount(name = name, balance = balance, accountType = accountType,isPrimary =  isPrimary, icon = icon,linkedBankId = linkedBankId)
+                }
             )
         }
     })

@@ -1,31 +1,37 @@
 package com.example.expencetracker2.presentation.transaction
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.expencetracker2.domain.transaction.repository.TransactionRepo
-import com.example.expencetracker2.domain.util.ResultState
+import com.example.expencetracker2.data.tracsaction.local.entity.AccountEntity
+import com.example.expencetracker2.data.tracsaction.local.seed.DatabaseSeedData.MASTER_CATEGORIES
 import com.example.expencetracker2.domain.transaction.model.Transaction
+import com.example.expencetracker2.domain.transaction.repository.TransactionRepo
+import com.example.expencetracker2.domain.transaction.usecase.GetFilteredTransactionsUseCase
+import com.example.expencetracker2.domain.util.ResultState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import kotlin.math.abs
 
 
 @HiltViewModel
 class TransactionViewModel @Inject constructor(
-    private val repository: TransactionRepo
+    private val repository: TransactionRepo,
+    private val getFilteredTransactionsUseCase: GetFilteredTransactionsUseCase
 ) : ViewModel() {
+
+
 
     private val _allTransaction  = MutableStateFlow(InsertTransactionState())
     val allTransaction = _allTransaction.asStateFlow()
 
-
-
-    init {
-        getAllTransaction()
-    }
 
     fun getAllTransaction() {
         viewModelScope.launch {
@@ -46,11 +52,38 @@ class TransactionViewModel @Inject constructor(
         }
     }
 
-    fun insertTransaction(amount: Double, subCategoryId: Long?, masterCategoryId  : Long, note: String?, paymentMode: String, isSynced: Boolean, isSpeedExpense: Boolean) {
+    private val _accountState = MutableStateFlow(InsertAccountState())
+    val accountState = _accountState.asStateFlow()
+
+    fun getAllAccounts() {
+        viewModelScope.launch {
+            repository.getAllAccounts().collect {
+                when(it) {
+                    is ResultState.Loading -> {
+                        _accountState.value = InsertAccountState(loading = true)
+                    }
+                    is ResultState.Success -> {
+                        _accountState.value = InsertAccountState(success = it.data, loading = false)
+                    }
+                    is ResultState.Error -> {
+                        _accountState.value = InsertAccountState(error = it.exception, loading = false)
+                    }
+                }
+            }
+        }
+    }
+
+    init {
+        getAllTransaction()
+        getAllAccounts()
+    }
+
+    fun insertTransaction(amount: Double, masterCategoryId: Long, popularCategoryId: Long?, regularCategoryId: Long?, note: String?, paymentMode: String, isSynced: Boolean, isSpeedExpense: Boolean) {
         viewModelScope.launch {
             val transaction = Transaction(
                 amount = amount,
-                subCategoryId = subCategoryId,
+                popularCategoryId = popularCategoryId,
+                regularCategoryId = regularCategoryId,
                 masterCategoryId = masterCategoryId,
                 timestamp = System.currentTimeMillis(),
                 note = note,
@@ -62,5 +95,125 @@ class TransactionViewModel @Inject constructor(
         }
     }
 
+    fun insertAccount(name: String, icon :String, balance: Double, accountType: String, isPrimary: Boolean = false, linkedBankId: Long? = null)  {
+        viewModelScope.launch {
+            val account = AccountEntity(
+                name = name,
+                icon = icon,
+                balance = balance,
+                isPrimary = isPrimary,
+                accountType = accountType,
+                linkedBankId = linkedBankId
+            )
+            repository.insertAccount(account)
+        }
+
+    }
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    private val _selectedCategory = MutableStateFlow("Category")
+    val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
+
+    private val _selectedMethod = MutableStateFlow("Method")
+    val selectedMethod: StateFlow<String> = _selectedMethod.asStateFlow()
+
+    private val _selectedDateMillis = MutableStateFlow<Long?>(null)
+    val selectedDateMillis: StateFlow<Long?> = _selectedDateMillis.asStateFlow()
+
+    // 2. Combine Flow for Filtered Output
+    val filteredTransactions: StateFlow<List<Transaction>> = combine(
+        repository.getAllTransaction(), // App Repo Stream
+        _searchQuery,
+        _selectedCategory,
+        _selectedMethod,
+        _selectedDateMillis
+    ) { result, query, category, method, dateMillis ->
+        val transactions = if (result is ResultState.Success) result.data else emptyList()
+        getFilteredTransactionsUseCase(
+            transactions = transactions,
+            query = query,
+            category = category,
+            method = method,
+            dateMillis = dateMillis
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    // 3. User Interaction Events
+    fun onSearchQueryChange(newQuery: String) { _searchQuery.value = newQuery }
+    fun onCategorySelect(category: String) { _selectedCategory.value = category }
+    fun onMethodSelect(method: String) { _selectedMethod.value = method }
+    fun onDateSelect(dateMillis: Long?) { _selectedDateMillis.value = dateMillis }
+    fun clearSearch() { _searchQuery.value = "" }
+    fun clearDateFilter() { _selectedDateMillis.value = null }
+
+    private val _selectedSlice = MutableStateFlow<PieChartSlice?>(null)
+    val selectedSlice: StateFlow<PieChartSlice?> = _selectedSlice.asStateFlow()
+
+    // रैंडम कलर्स की लिस्ट (हर कैटेगरी के लिए)
+    private val sliceColors = listOf(
+        Color(0xFFFF6B6B), Color(0xFF4ECDC4), Color(0xFFFFD166),
+        Color(0xFF06D6A0), Color(0xFF118AB2), Color(0xFF073B4C),
+        Color(0xFF9C27B0), Color(0xFFFF9800)
+    )
+
+    // लिस्ट से पाई चार्ट का डेटा कैलकुलेट करने का फ़ंक्शन
+    fun getPieChartSlices(transactions: List<Transaction>): List<PieChartSlice> {
+        val expensesOnly = transactions.filter { it.amount != 0.0 }
+        val totalExpense = expensesOnly.sumOf { abs(it.amount) }
+
+        if (totalExpense == 0.0) return emptyList()
+
+        // 1. masterCategoryId के हिसाब से ग्रुप करना
+        val grouped = expensesOnly.groupBy { it.masterCategoryId }
+
+        var currentStartAngle = 0f
+        val slices = mutableListOf<PieChartSlice>()
+
+        grouped.entries.forEachIndexed { index, entry ->
+            val masterCatId = entry.key
+
+            // 2. MASTER_CATEGORIES की लिस्ट में से असली नाम निकालना
+            val realCategoryName = MASTER_CATEGORIES.firstOrNull { it.id == masterCatId }?.name ?: "Others"
+
+            val categoryTotal = entry.value.sumOf { abs(it.amount) }
+            val percentage = ((categoryTotal / totalExpense) * 100).toFloat()
+            val sweepAngle = ((categoryTotal / totalExpense) * 360).toFloat()
+            val color = sliceColors[index % sliceColors.size]
+
+            slices.add(
+                PieChartSlice(
+                    categoryName = realCategoryName, // अब यहाँ असली नाम (जैसे Food, Travel आदि) आएगा
+                    amount = categoryTotal,
+                    percentage = percentage,
+                    sweepAngle = sweepAngle,
+                    startAngle = currentStartAngle,
+                    color = color
+                )
+            )
+
+            currentStartAngle += sweepAngle
+        }
+
+        return slices
+    }
+
+    fun selectSlice(slice: PieChartSlice?) {
+        _selectedSlice.value = slice
+    }
+
 }
 
+data class PieChartSlice(
+    val categoryName: String,
+    val amount: Double,
+    val percentage: Float,
+    val sweepAngle: Float,
+    val startAngle: Float,
+    val color: Color
+)

@@ -1,6 +1,7 @@
 package com.example.expencetracker2.data.tracsaction.repoImpl
 
 import com.example.expencetracker2.data.tracsaction.local.dao.TransactionDao
+import com.example.expencetracker2.data.tracsaction.local.entity.AccountEntity
 import com.example.expencetracker2.data.tracsaction.local.mapper.toDomain
 import com.example.expencetracker2.data.tracsaction.local.mapper.toEntity
 import com.example.expencetracker2.domain.transaction.repository.TransactionRepo
@@ -18,6 +19,10 @@ class TransactionRepoImpl @Inject constructor(
         transactionDao.insertInTransaction(transaction.toEntity())
     }
 
+    override suspend fun insertAccount(accountEntity: AccountEntity) {
+        transactionDao.insertAccount(accountEntity)
+    }
+
     override fun getAllTransaction(): Flow<ResultState<List<Transaction>>> = flow {
         emit(ResultState.Loading)
 
@@ -27,6 +32,18 @@ class TransactionRepoImpl @Inject constructor(
             }
         } catch (e : Exception) {
             emit(ResultState.Error(e.localizedMessage!!))
+        }
+    }
+
+    override fun getAllAccounts(): Flow<ResultState<List<AccountEntity>>> = flow {
+        emit(ResultState.Loading)
+
+        try {
+            transactionDao.getAllAccounts().collect {
+                emit(ResultState.Success(it))
+            }
+        } catch (e: Exception) {
+            emit(ResultState.Error(e.localizedMessage ?: "An unknown error occurred"))
         }
     }
 

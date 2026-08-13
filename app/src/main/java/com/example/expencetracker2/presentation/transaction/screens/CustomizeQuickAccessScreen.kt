@@ -1,11 +1,23 @@
-package com.example.expencetracker2.presentation.transaction
+package com.example.expencetracker2.presentation.transaction.screens
 
 import android.annotation.SuppressLint
 import android.util.Log.e
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -17,19 +29,38 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -121,12 +152,10 @@ fun CustomizeQuickAccessScreen(
                     }
                 },
                 actions = {
-                    // 🔥 0 item selected hone par bhi Save button hamesha clickable rahega
                     TextButton(
                         onClick = {
                             scope.launch {
                                 try {
-                                    // 0 selection hone par empty list pass hogi
                                     userPrefs.saveCategoryIds(selectedItemIds.toList())
                                     Toast.makeText(context, "Quick access updated", Toast.LENGTH_SHORT).show()
                                     onBackClick()
@@ -224,20 +253,57 @@ fun CustomizeQuickAccessScreen(
                     }
                 } else {
                     groupedCategories.forEach { (masterCategory, subCategories) ->
-                        // Header Span
+                        // Header Span with Master Category Icon
                         item(span = { GridItemSpan(this.maxLineSpan) }) {
-                            Text(
-                                text = "${masterCategory.iconName} ${masterCategory.name}",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary,
+                            val masterIconName = remember(masterCategory.iconName) {
+                                masterCategory.iconName.substringBeforeLast(".").trim().lowercase()
+                            }
+
+                            val masterDrawableId = remember(masterIconName) {
+                                if (masterIconName.isNotBlank()) {
+                                    context.resources.getIdentifier(
+                                        masterIconName,
+                                        "drawable",
+                                        context.packageName
+                                    )
+                                } else 0
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(top = 12.dp, bottom = 4.dp, start = 4.dp)
-                            )
+                            ) {
+                                // Master Category Icon
+                                if (masterDrawableId != 0) {
+                                    Image(
+                                        painter = painterResource(id = masterDrawableId),
+                                        contentDescription = masterCategory.name,
+                                        contentScale = ContentScale.Fit,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.Category,
+                                        contentDescription = masterCategory.name,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+
+                                // Master Category Title
+                                Text(
+                                    text = masterCategory.name,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
 
-                        // Grid Items
+                        // Grid Items (as is)
                         items(subCategories, key = { it.id }) { subItem ->
                             val isSelected = selectedItemIds.contains(subItem.id)
 
@@ -263,7 +329,7 @@ fun CustomizeQuickAccessScreen(
 }
 
 // ==========================================
-// 3-COLUMN GRID ITEM CARD
+// CLEAN CARD (TOP-END CROSS, NO ICON BG, 2-LINE TEXT WRAP)
 // ==========================================
 @SuppressLint("DiscouragedApi", "LocalContextResourcesRead")
 @Composable
@@ -274,96 +340,102 @@ fun GridSubCategoryCard(
 ) {
     val context = LocalContext.current
 
-    val drawableId = remember(item.iconName) {
-        context.resources.getIdentifier(
-            item.iconName,
-            "drawable",
-            context.packageName
-        )
+    val cleanIconName = remember(item.iconName) {
+        item.iconName.substringBeforeLast(".").trim().lowercase()
     }
 
-    Surface(
-        onClick = onSelectToggle,
-        shape = RoundedCornerShape(16.dp),
-        color = if (isSelected)
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-        border = if (isSelected)
-            BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary)
-        else null,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Box(contentAlignment = Alignment.TopEnd) {
-                val itemColor = parseHexColor(item.colorHex)
-                Box(
-                    modifier = Modifier
-                        .size(46.dp)
-                        .clip(CircleShape)
-                        .background(itemColor.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (drawableId != 0) {
-                        Icon(
-                            painter = painterResource(id = drawableId),
-                            contentDescription = item.name,
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(26.dp)
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.Category,
-                            contentDescription = item.name,
-                            tint = parseHexColor(item.colorHex),
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
-
-                if (isSelected) {
-                    Box(
-                        modifier = Modifier
-                            .size(18.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Selected",
-                            tint = Color.White,
-                            modifier = Modifier.size(12.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = item.name,
-                fontSize = 12.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurface,
-                lineHeight = 15.sp
+    val drawableId = remember(cleanIconName) {
+        if (cleanIconName.isNotBlank()) {
+            context.resources.getIdentifier(
+                cleanIconName,
+                "drawable",
+                context.packageName
             )
+        } else 0
+    }
+
+    // Outer Box taaki Top-End chookdi badge overflow/float kar sake
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.TopEnd
+    ) {
+        ElevatedCard(
+            onClick = onSelectToggle,
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            elevation = CardDefaults.elevatedCardElevation(
+                defaultElevation = 2.dp
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp, end = 3.dp) // Space for top-end badge
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                // 1. Direct Icon (No Circle Background behind icon)
+                if (drawableId != 0) {
+                    Image(
+                        painter = painterResource(id = drawableId),
+                        contentDescription = item.name,
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.size(15.dp)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Category,
+                        contentDescription = item.name,
+                        tint = parseHexColor(item.colorHex),
+                        modifier = Modifier.size(15.dp)
+                    )
+                }
+
+                // 2. Full Name with 2-Line Wrap
+                Text(
+                    text = item.name,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 2,
+                    lineHeight = 13.sp,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
+        // 3. Top-End Chookdi (Cross) Badge on Selection
+        if (isSelected) {
+            Box(
+                modifier = Modifier
+                    .size(16.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF616161)), // Dark neutral cross badge
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Remove",
+                    tint = Color.White,
+                    modifier = Modifier.size(10.dp)
+                )
+            }
         }
     }
 }
 
 fun parseHexColor(hexColor: String): Color {
-    val cleanHex = hexColor.replace("#", "")
-    val colorInt = cleanHex.toLongOrNull(16) ?: 0xFF808080
-    return if (cleanHex.length == 6) {
-        Color(colorInt or 0xFF000000)
-    } else {
-        Color(colorInt)
+    return try {
+        val cleanHex = hexColor.replace("#", "")
+        val colorInt = cleanHex.toLong(16)
+        if (cleanHex.length == 6) Color(colorInt or 0xFF000000) else Color(colorInt)
+    } catch (e: Exception) {
+        Color.Gray
     }
 }

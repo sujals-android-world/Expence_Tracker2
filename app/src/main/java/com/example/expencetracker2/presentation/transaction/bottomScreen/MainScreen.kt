@@ -2,14 +2,14 @@ package com.example.expencetracker2.presentation.transaction.bottomScreen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -19,34 +19,36 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.expencetracker2.presentation.navigation.Routes
+import com.example.expencetracker2.presentation.transaction.TransactionViewModel
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     onAddClick: () -> Unit,
     onCategorySelected: (Int) -> Unit,
-    onQuickSaveClick: (amount: Double, masterCategoryId: Long, note : String?, paymentMode: String) -> Unit,
-    onCustomizeClick : () -> Unit
+    onQuickSaveClick: (amount: Double, masterCategoryId: Long, popularCategoryId: Long?, regularCategoryId: Long?, note: String?, paymentMode: String) -> Unit,
+    onCustomizeClick: () -> Unit,
+    transactionViewModel: TransactionViewModel,
+    onPremiumUserDashBoardClick: () -> Unit
 ) {
-    // प्रीमियम कलर्स को यहाँ भी डिफाइन किया ताकि पूरे बार में उपयोग हो सके
+    // प्रीमियम कलर्स
     val PremiumBg = Color(0xFFF8F9FA)
     val PremiumSurface = Color(0xFFFFFFFF)
-    val PremiumTextDark = Color(0xFF1A1A1A)
     val PremiumTextGray = Color(0xFF6C757D)
-    val PremiumBorder = Color(0xFFE9ECEF)
     val PremiumPrimary = Color(0xFF007AFF)
 
-    val bottomNavController = rememberNavController()
     val screens = listOf(
         Screen.Home,
         Screen.Details,
@@ -54,29 +56,37 @@ fun MainScreen(
         Screen.Budget
     )
 
+    // 1. Swiping handle करने के लिए Pager State और Coroutine Scope
+    val pagerState = rememberPagerState(pageCount = { screens.size })
+    val coroutineScope = rememberCoroutineScope()
+
+    // 2. Details Screen States
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    var selectedCategoryText by rememberSaveable { mutableStateOf("All") }
+    var selectedMethodText by rememberSaveable { mutableStateOf("All") }
+    val datePickerState = rememberDatePickerState()
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
+
+    // 3. Analytics Screen States
+
+
     Scaffold(
-        containerColor = PremiumBg, // पूरी स्क्रीन का डिफ़ॉल्ट बैकग्राउंड ऑफ-व्हाइट किया
+        containerColor = PremiumBg,
         bottomBar = {
-            // टॉप पर बारीक बॉर्डर देने के लिए बॉक्स का उपयोग किया
             Box {
                 NavigationBar(
-                    modifier = Modifier.height(95.dp), // आपकी ओरिजिनल 95.dp हाइट वापस लगा दी
-                    containerColor = PremiumSurface,   // बैकग्राउंड को प्रीमियम प्योर व्हाइट रखा
-                    tonalElevation = 0.dp              // पुराना मटेरियल टोन हटाया ताकि साफ लुक मिले
+                    modifier = Modifier.height(95.dp),
+                    containerColor = PremiumSurface,
+                    tonalElevation = 0.dp
                 ) {
-                    val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
-                    val currentRoute = navBackStackEntry?.destination?.route
-                    screens.forEach { screen ->
-                        val isSelected = currentRoute == screen.route
+                    screens.forEachIndexed { index, screen ->
+                        val isSelected = pagerState.currentPage == index
                         NavigationBarItem(
                             selected = isSelected,
                             onClick = {
-                                bottomNavController.navigate(screen.route) {
-                                    popUpTo(bottomNavController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
+                                // Bottom Item पर क्लिक करने पर स्मूथ स्वाइप
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(index)
                                 }
                             },
                             icon = {
@@ -84,25 +94,25 @@ fun MainScreen(
                                     imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
                                     contentDescription = null,
                                     modifier = Modifier
-                                        .size(26.dp)            // आपका ओरिजिनल आइकन साइज
-                                        .offset(y = 4.dp)       // आपका ओरिजinal आइकन ऑफसेट
+                                        .size(26.dp)
+                                        .offset(y = 4.dp)
                                 )
                             },
                             label = {
                                 Text(
                                     text = screen.title,
-                                    fontSize = 12.sp,           // आपका ओरिजिनल फॉन्ट साइज
+                                    fontSize = 12.sp,
                                     fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
-                                    modifier = Modifier.offset(y = ((-2).dp)) // आपका ओरिजिनल टेक्स्ट ऑफसेट
+                                    modifier = Modifier.offset(y = (-2).dp)
                                 )
                             },
                             alwaysShowLabel = true,
                             colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = PremiumPrimary,    // सिलेक्ट होने पर आईओएस ब्लू
-                                selectedTextColor = PremiumPrimary,    // सिलेक्ट होने पर टेक्स्ट भी ब्लू
-                                unselectedIconColor = PremiumTextGray, // सामान्य स्थिति में सॉफ्ट ग्रे आइकन
-                                unselectedTextColor = PremiumTextGray, // सामान्य स्थिति में सॉफ्ट ग्रे टेक्स्ट
-                                indicatorColor = Color.Transparent     // सिलेक्टेड आइटम के पीछे का भारी बैकग्राउंड हटाया
+                                selectedIconColor = PremiumPrimary,
+                                selectedTextColor = PremiumPrimary,
+                                unselectedIconColor = PremiumTextGray,
+                                unselectedTextColor = PremiumTextGray,
+                                indicatorColor = Color.Transparent
                             )
                         )
                     }
@@ -110,60 +120,76 @@ fun MainScreen(
             }
         }
     ) { innerPadding ->
-        NavHost(
-            navController = bottomNavController,
-            startDestination = Routes.Home,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(Routes.Home) {
-                HomeScreen(
-                    onAddClick = onAddClick,
-                    onCategorySelected = onCategorySelected,
-                    onQuickSaveClick = onQuickSaveClick,
-                    onCustomizeClick = onCustomizeClick
-                )
-            }
-            composable(Routes.Details) {
-                Box(modifier = Modifier.fillMaxSize().background(PremiumBg)) {
-                    DetailsScreen(
-                        transactionsList = emptyList(),
-                        searchQuery = "",
-                        selectedCategoryText = "All",
-                        selectedMethodText = "All",
-                        datePickerState = rememberDatePickerState(),
-                        showDatePicker = false,
-                        onSearchQueryChange = { },
-                        onClearSearchClick = { },
-                        onDateChipClick = { },
-                        onDatePickerDismiss = { },
-                        onDatePickerConfirm = { },
-                        onDatePickerClearFilter = { },
-                        onCategorySelect = { },
-                        onMethodSelect = { }
+        // 4. HorizontalPager से स्क्रीन अगल-बगल स्वाइप होंगी
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) { page ->
+            when (page) {
+                0 -> {
+                    HomeScreen(
+                        onAddClick = onAddClick,
+                        onCategorySelected = onCategorySelected,
+                        onQuickSaveClick = onQuickSaveClick,
+                        onCustomizeClick = onCustomizeClick,
+                        onPremiumUserDashBoardClick = onPremiumUserDashBoardClick
                     )
                 }
-            }
-            composable(Routes.Analytics) {
-                Box(modifier = Modifier.fillMaxSize().background(PremiumBg)) {
-                    AnalyticsScreen()
+                1 -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(PremiumBg)
+                    ) {
+                        DetailsScreen(
+                            searchQuery = searchQuery,
+                            selectedCategoryText = selectedCategoryText,
+                            selectedMethodText = selectedMethodText,
+                            datePickerState = datePickerState,
+                            showDatePicker = showDatePicker,
+                            transactionViewModel = transactionViewModel,
+                            onSearchQueryChange = { newQuery -> searchQuery = newQuery },
+                            onClearSearchClick = { searchQuery = "" },
+                            onDateChipClick = { showDatePicker = true },
+                            onDatePickerDismiss = { showDatePicker = false },
+                            onDatePickerConfirm = { millis ->
+                                datePickerState.selectedDateMillis = millis
+                                showDatePicker = false
+                            },
+                            onDatePickerClearFilter = {
+                                datePickerState.selectedDateMillis = null
+                                showDatePicker = false
+                            },
+                            onCategorySelect = { category -> selectedCategoryText = category },
+                            onMethodSelect = { method -> selectedMethodText = method }
+                        )
+                    }
                 }
-            }
-            composable(Routes.Budget) {
-                Box(modifier = Modifier.fillMaxSize().background(PremiumBg)) {
-                    BudgetScreen()
+                2 -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(PremiumBg)
+                    ) {
+                        AnalysisScreen(
+                            getPieChartSlices = transactionViewModel::getPieChartSlices,
+                            onSliceSelect = { slice -> transactionViewModel.selectSlice(slice) },
+                            transactionViewModel = transactionViewModel
+                        )
+                    }
+                }
+                3 -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(PremiumBg)
+                    ) {
+                        BudgetScreen()
+                    }
                 }
             }
         }
     }
-}
-
-@androidx.compose.ui.tooling.preview.Preview(showBackground = true)
-@Composable
-fun MainScreenPreview() {
-    MainScreen(
-        onAddClick = {},
-        onCategorySelected = {},
-        onQuickSaveClick = { _, _, _, _ -> },
-        onCustomizeClick = {}
-    )
 }
