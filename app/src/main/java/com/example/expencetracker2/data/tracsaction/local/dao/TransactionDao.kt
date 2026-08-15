@@ -24,5 +24,8 @@ interface TransactionDao {
     @Query("SELECT * FROM `accounts`")
     fun getAllAccounts(): Flow<List<AccountEntity>>
 
+    @Query("update accounts set balance  = :balance where id = :id")
+    fun updateAmount(balance : Double, id : Long)
+
 
 }

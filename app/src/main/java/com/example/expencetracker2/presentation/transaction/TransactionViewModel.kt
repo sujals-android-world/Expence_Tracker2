@@ -7,15 +7,12 @@ import com.example.expencetracker2.data.tracsaction.local.entity.AccountEntity
 import com.example.expencetracker2.data.tracsaction.local.seed.DatabaseSeedData.MASTER_CATEGORIES
 import com.example.expencetracker2.domain.transaction.model.Transaction
 import com.example.expencetracker2.domain.transaction.repository.TransactionRepo
-import com.example.expencetracker2.domain.transaction.usecase.GetFilteredTransactionsUseCase
 import com.example.expencetracker2.domain.util.ResultState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.abs
@@ -24,7 +21,6 @@ import kotlin.math.abs
 @HiltViewModel
 class TransactionViewModel @Inject constructor(
     private val repository: TransactionRepo,
-    private val getFilteredTransactionsUseCase: GetFilteredTransactionsUseCase
 ) : ViewModel() {
 
 
@@ -78,7 +74,19 @@ class TransactionViewModel @Inject constructor(
         getAllAccounts()
     }
 
-    fun insertTransaction(amount: Double, masterCategoryId: Long, popularCategoryId: Long?, regularCategoryId: Long?, note: String?, paymentMode: String, isSynced: Boolean, isSpeedExpense: Boolean) {
+    fun insertTransaction(
+        amount: Double,
+        masterCategoryId: Long,
+        popularCategoryId: Long?,
+        regularCategoryId: Long?,
+        note: String?,
+        paymentMode: String,
+        isSynced: Boolean,
+        isSpeedExpense: Boolean,
+        isExpense: Boolean = true,
+        isIncome : Boolean = false,
+        isTransfer : Boolean = false
+    ) {
         viewModelScope.launch {
             val transaction = Transaction(
                 amount = amount,
@@ -89,7 +97,10 @@ class TransactionViewModel @Inject constructor(
                 note = note,
                 paymentMode = paymentMode,
                 isSynced = isSynced,
-                isSpeedExpense = isSpeedExpense
+                isSpeedExpense = isSpeedExpense,
+                isIncome = isIncome,
+                isExpense = isExpense,
+                isTransfer = isTransfer
             )
             repository.insertTransaction(transaction)
         }
@@ -110,47 +121,6 @@ class TransactionViewModel @Inject constructor(
 
     }
 
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
-
-    private val _selectedCategory = MutableStateFlow("Category")
-    val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
-
-    private val _selectedMethod = MutableStateFlow("Method")
-    val selectedMethod: StateFlow<String> = _selectedMethod.asStateFlow()
-
-    private val _selectedDateMillis = MutableStateFlow<Long?>(null)
-    val selectedDateMillis: StateFlow<Long?> = _selectedDateMillis.asStateFlow()
-
-    // 2. Combine Flow for Filtered Output
-    val filteredTransactions: StateFlow<List<Transaction>> = combine(
-        repository.getAllTransaction(), // App Repo Stream
-        _searchQuery,
-        _selectedCategory,
-        _selectedMethod,
-        _selectedDateMillis
-    ) { result, query, category, method, dateMillis ->
-        val transactions = if (result is ResultState.Success) result.data else emptyList()
-        getFilteredTransactionsUseCase(
-            transactions = transactions,
-            query = query,
-            category = category,
-            method = method,
-            dateMillis = dateMillis
-        )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
-    )
-
-    // 3. User Interaction Events
-    fun onSearchQueryChange(newQuery: String) { _searchQuery.value = newQuery }
-    fun onCategorySelect(category: String) { _selectedCategory.value = category }
-    fun onMethodSelect(method: String) { _selectedMethod.value = method }
-    fun onDateSelect(dateMillis: Long?) { _selectedDateMillis.value = dateMillis }
-    fun clearSearch() { _searchQuery.value = "" }
-    fun clearDateFilter() { _selectedDateMillis.value = null }
 
     private val _selectedSlice = MutableStateFlow<PieChartSlice?>(null)
     val selectedSlice: StateFlow<PieChartSlice?> = _selectedSlice.asStateFlow()
@@ -206,6 +176,26 @@ class TransactionViewModel @Inject constructor(
     fun selectSlice(slice: PieChartSlice?) {
         _selectedSlice.value = slice
     }
+
+
+    fun updateAccountBalance(balance: Double,id : Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateAmount(balance,id)
+        }
+    }
+
+    fun updateMultipleAccounts(accountsToUpdate: List<Pair<Long, Double>>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            accountsToUpdate.forEach { (accountId, newBalance) ->
+                // तेरा पुराना update account function यहाँ कॉल होगा
+                updateAccountBalance(
+                    id = accountId,
+                    balance = newBalance
+                )
+            }
+        }
+    }
+
 
 }
 

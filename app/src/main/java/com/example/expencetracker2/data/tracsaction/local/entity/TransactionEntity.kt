@@ -23,5 +23,5 @@ data class TransactionEntity(
     val isSpeedExpense : Boolean = true,
     val isExpense : Boolean = true,
     val isIncome : Boolean = false,
-    val  isTransfer : Boolean = false
+    val isTransfer : Boolean = false
 )

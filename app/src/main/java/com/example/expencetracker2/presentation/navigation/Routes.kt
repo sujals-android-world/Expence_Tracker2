@@ -16,4 +16,8 @@ object Routes {
 
     const val PremiumUserdashBoard = "PremiumUserdashBoard"
 
+    const val AddIncomescreen = "AddIncomescreen"
+
+    const val TransferScreen = "TransferScreen"
+
 }

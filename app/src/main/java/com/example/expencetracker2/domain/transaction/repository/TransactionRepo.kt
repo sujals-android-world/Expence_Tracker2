@@ -17,6 +17,8 @@ interface TransactionRepo {
 
     fun getAllAccounts(): Flow<ResultState<List<AccountEntity>>>
 
+    suspend fun updateAmount(balance : Double, id : Long)
+
 
 
 

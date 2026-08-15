@@ -47,5 +47,9 @@ class TransactionRepoImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateAmount(balance: Double, id: Long) {
+        transactionDao.updateAmount(balance,id)
+    }
+
 
 }

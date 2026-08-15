@@ -167,7 +167,7 @@ import com.example.expencetracker2.data.tracsaction.local.seed.DatabaseSeedData.
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        MASTER_CATEGORIES.forEach { category ->
+                        MASTER_CATEGORIES.take(8).forEach { category ->
                             val isSelected = selectedCategoryId == category.id
 
                             val categoryColor = remember(category.colorHex) {

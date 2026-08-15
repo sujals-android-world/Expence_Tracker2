@@ -7,6 +7,7 @@ import com.example.expencetracker2.data.tracsaction.local.entity.SubCategoryEnti
 object DatabaseSeedData {
 
     val MASTER_CATEGORIES = listOf(
+        // 🔴 EXPENSE CATEGORIES (ID: 1 to 8)
         MasterCategoryEntity(id = 1, name = "Food & Dining", iconName = "ic_master_food", colorHex = "#FF5722", displayOrder = 1),
         MasterCategoryEntity(id = 2, name = "Travel & Commute", iconName = "ic_master_travel", colorHex = "#2196F3", displayOrder = 2),
         MasterCategoryEntity(id = 3, name = "Shopping & Lifestyle", iconName = "ic_master_shopping", colorHex = "#E91E63", displayOrder = 3),
@@ -14,7 +15,18 @@ object DatabaseSeedData {
         MasterCategoryEntity(id = 5, name = "Health & Wellness", iconName = "ic_master_health", colorHex = "#4CAF50", displayOrder = 5),
         MasterCategoryEntity(id = 6, name = "Financials & Debt", iconName = "ic_master_finance", colorHex = "#00BCD4", displayOrder = 6),
         MasterCategoryEntity(id = 7, name = "Entertainment", iconName = "ic_master_entertainment", colorHex = "#FFC107", displayOrder = 7),
-        MasterCategoryEntity(id = 8, name = "Others", iconName = "ic_master_others", colorHex = "#607D8B", displayOrder = 8)
+        MasterCategoryEntity(id = 8, name = "Others", iconName = "ic_master_others", colorHex = "#607D8B", displayOrder = 8),
+
+        // 🟢 INCOME CATEGORIES (ID: 9 to 17)
+        MasterCategoryEntity(id = 9, name = "Salary & Wages", iconName = "ic_master_salary", colorHex = "#2E7D32", displayOrder = 9),
+        MasterCategoryEntity(id = 10, name = "Business & Freelance", iconName = "ic_master_business", colorHex = "#00897B", displayOrder = 10),
+        MasterCategoryEntity(id = 11, name = "Investments & Interest", iconName = "ic_master_investment", colorHex = "#1565C0", displayOrder = 11),
+        MasterCategoryEntity(id = 12, name = "Pocket Money & Allowance", iconName = "ic_master_allowance", colorHex = "#8E24AA", displayOrder = 12),
+        MasterCategoryEntity(id = 13, name = "Rental & Property", iconName = "ic_master_rental", colorHex = "#D81B60", displayOrder = 13),
+        MasterCategoryEntity(id = 14, name = "Cashback & Refunds", iconName = "ic_master_cashback", colorHex = "#F57F17", displayOrder = 14),
+        MasterCategoryEntity(id = 15, name = "Gifts & Scholarships", iconName = "ic_master_gift", colorHex = "#00ACC1", displayOrder = 15),
+        MasterCategoryEntity(id = 16, name = "Crypto", iconName = "ic_master_sell", colorHex = "#6D4C41", displayOrder = 16),
+        MasterCategoryEntity(id = 17, name = "Other Income", iconName = "ic_master_other_income", colorHex = "#455A64", displayOrder = 17)
     )
 
     val POPULAR_CATEGORIES = listOf(
