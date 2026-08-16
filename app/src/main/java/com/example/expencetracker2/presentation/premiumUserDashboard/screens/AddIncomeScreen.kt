@@ -1,4 +1,4 @@
-package com.example.expencetracker2.presentation.transaction.screens
+package com.example.expencetracker2.presentation.premiumUserDashboard.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.border
@@ -36,10 +36,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.expencetracker2.data.tracsaction.local.entity.AccountEntity
+import com.example.expencetracker2.data.premiumDashboard.entity.AccountEntity
 import com.example.expencetracker2.domain.transaction.model.Transaction
-import com.example.expencetracker2.presentation.transaction.TransactionViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.expencetracker2.presentation.premiumUserDashboard.PremiumUserDashboardViewmodel
 
 // 🟢 9 Income Master Categories Data Class
 data class IncomeCategoryItem(
@@ -64,7 +64,7 @@ val INCOME_CATEGORIES = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddIncomeScreen(
-    viewModel: TransactionViewModel,
+    premiumUserDashboardViewmodel: PremiumUserDashboardViewmodel,
     onBackClick: () -> Unit,
     onNavigateToAddAccount: () -> Unit = {}, // 🟢 Account Add Screen par bhejne ke liye callback
     onSaveIncome: (
@@ -76,7 +76,7 @@ fun AddIncomeScreen(
         childAccountsToUpdate: List<Pair<Long, Double>>
     ) -> Unit
 ) {
-    val account by viewModel.accountState.collectAsStateWithLifecycle()
+    val account by premiumUserDashboardViewmodel.accountState.collectAsStateWithLifecycle()
     val accountsList = account.success
 
     val isDark = isSystemInDarkTheme()

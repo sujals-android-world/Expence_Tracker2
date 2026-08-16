@@ -3,7 +3,7 @@ package com.example.expencetracker2.presentation.transaction
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.expencetracker2.data.tracsaction.local.entity.AccountEntity
+import com.example.expencetracker2.data.premiumDashboard.entity.AccountEntity
 import com.example.expencetracker2.data.tracsaction.local.seed.DatabaseSeedData.MASTER_CATEGORIES
 import com.example.expencetracker2.domain.transaction.model.Transaction
 import com.example.expencetracker2.domain.transaction.repository.TransactionRepo
@@ -48,30 +48,9 @@ class TransactionViewModel @Inject constructor(
         }
     }
 
-    private val _accountState = MutableStateFlow(InsertAccountState())
-    val accountState = _accountState.asStateFlow()
-
-    fun getAllAccounts() {
-        viewModelScope.launch {
-            repository.getAllAccounts().collect {
-                when(it) {
-                    is ResultState.Loading -> {
-                        _accountState.value = InsertAccountState(loading = true)
-                    }
-                    is ResultState.Success -> {
-                        _accountState.value = InsertAccountState(success = it.data, loading = false)
-                    }
-                    is ResultState.Error -> {
-                        _accountState.value = InsertAccountState(error = it.exception, loading = false)
-                    }
-                }
-            }
-        }
-    }
 
     init {
         getAllTransaction()
-        getAllAccounts()
     }
 
     fun insertTransaction(
@@ -106,23 +85,7 @@ class TransactionViewModel @Inject constructor(
         }
     }
 
-    fun insertAccount(name: String, icon :String, balance: Double, accountType: String, isPrimary: Boolean = false, linkedBankId: Long? = null,creditLimit : Double? = null, statementDate : Int? = null,dueDate : Int? = null)  {
-        viewModelScope.launch {
-            val account = AccountEntity(
-                name = name,
-                icon = icon,
-                balance = balance,
-                isPrimary = isPrimary,
-                accountType = accountType,
-                linkedBankId = linkedBankId,
-                creditLimit = creditLimit,
-                statementDate = statementDate,
-                dueDate = dueDate
-            )
-            repository.insertAccount(account)
-        }
 
-    }
 
 
     private val _selectedSlice = MutableStateFlow<PieChartSlice?>(null)
@@ -180,24 +143,6 @@ class TransactionViewModel @Inject constructor(
         _selectedSlice.value = slice
     }
 
-
-    fun updateAccountBalance(balance: Double,id : Long) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.updateAmount(balance,id)
-        }
-    }
-
-    fun updateMultipleAccounts(accountsToUpdate: List<Pair<Long, Double>>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            accountsToUpdate.forEach { (accountId, newBalance) ->
-                // तेरा पुराना update account function यहाँ कॉल होगा
-                updateAccountBalance(
-                    id = accountId,
-                    balance = newBalance
-                )
-            }
-        }
-    }
 
 
 }

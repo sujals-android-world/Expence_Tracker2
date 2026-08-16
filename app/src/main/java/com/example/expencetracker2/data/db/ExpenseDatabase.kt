@@ -1,13 +1,14 @@
-package com.example.expencetracker2.data.tracsaction.local.db
+package com.example.expencetracker2.data.db
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.expencetracker2.data.premiumDashboard.dao.PremiumDashboardDao
 import com.example.expencetracker2.data.tracsaction.local.dao.BudgetDao
 
 import com.example.expencetracker2.data.tracsaction.local.dao.TransactionDao
-import com.example.expencetracker2.data.tracsaction.local.entity.AccountEntity
+import com.example.expencetracker2.data.premiumDashboard.entity.AccountEntity
 import com.example.expencetracker2.data.tracsaction.local.entity.BudgetEntity
 import com.example.expencetracker2.data.tracsaction.local.entity.MasterCategoryEntity
 import com.example.expencetracker2.data.tracsaction.local.entity.SubCategoryEntity
@@ -21,6 +22,8 @@ import com.example.expencetracker2.data.tracsaction.local.entity.TransactionEnti
 abstract class ExpenseDatabase : RoomDatabase() {
     abstract fun transactionDao(): TransactionDao
     abstract fun budgetDao(): BudgetDao
+
+    abstract fun premiumUserDashboardDao() : PremiumDashboardDao
 
     companion object {
         @Volatile

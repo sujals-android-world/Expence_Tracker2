@@ -1,4 +1,4 @@
-package com.example.expencetracker2.presentation.transaction.screens
+package com.example.expencetracker2.presentation.premiumUserDashboard.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,8 +46,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.expencetracker2.data.tracsaction.local.entity.AccountEntity
+import com.example.expencetracker2.data.premiumDashboard.entity.AccountEntity
 import com.example.expencetracker2.domain.transaction.model.Transaction
+import com.example.expencetracker2.presentation.premiumUserDashboard.PremiumUserDashboardViewmodel
 import com.example.expencetracker2.presentation.transaction.TransactionViewModel
 
 // 🔹 Helper Data Class & Function for 2-Row Column Pair
@@ -79,6 +80,7 @@ fun groupAccountsFor2Rows(accounts: List<AccountEntity>): List<AccountColumnPair
 
 @Composable
 fun PremiumUserDashBoard(
+    premiumUserDashboardViewmodel: PremiumUserDashboardViewmodel,
     transactionViewModel: TransactionViewModel,
     onAccountClick: (AccountEntity) -> Unit,
     onAddIncomeClick: () -> Unit,      // 🟢 Add Income click
@@ -86,7 +88,7 @@ fun PremiumUserDashBoard(
     onAddAccountClick: () -> Unit      // ➕ Add Account Screen Navigation Callback
 ) {
     val isDark = isSystemInDarkTheme()
-    val accountsState by transactionViewModel.accountState.collectAsStateWithLifecycle()
+    val accountsState by premiumUserDashboardViewmodel.accountState.collectAsStateWithLifecycle()
     val accountList = accountsState.success
     val list = transactionViewModel.allTransaction.collectAsStateWithLifecycle()
     val recentActivity = remember(list.value.success) {

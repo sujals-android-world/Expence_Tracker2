@@ -1,12 +1,11 @@
 package com.example.expencetracker2.data.tracsaction.repoImpl
 
 import com.example.expencetracker2.data.tracsaction.local.dao.TransactionDao
-import com.example.expencetracker2.data.tracsaction.local.entity.AccountEntity
 import com.example.expencetracker2.data.tracsaction.local.mapper.toDomain
 import com.example.expencetracker2.data.tracsaction.local.mapper.toEntity
-import com.example.expencetracker2.domain.transaction.repository.TransactionRepo
 import com.example.expencetracker2.domain.util.ResultState
 import com.example.expencetracker2.domain.transaction.model.Transaction
+import com.example.expencetracker2.domain.transaction.repository.TransactionRepo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -17,10 +16,6 @@ class TransactionRepoImpl @Inject constructor(
 ) : TransactionRepo {
     override suspend fun insertTransaction(transaction: Transaction) {
         transactionDao.insertInTransaction(transaction.toEntity())
-    }
-
-    override suspend fun insertAccount(accountEntity: AccountEntity) {
-        transactionDao.insertAccount(accountEntity)
     }
 
     override fun getAllTransaction(): Flow<ResultState<List<Transaction>>> = flow {
@@ -34,22 +29,5 @@ class TransactionRepoImpl @Inject constructor(
             emit(ResultState.Error(e.localizedMessage!!))
         }
     }
-
-    override fun getAllAccounts(): Flow<ResultState<List<AccountEntity>>> = flow {
-        emit(ResultState.Loading)
-
-        try {
-            transactionDao.getAllAccounts().collect {
-                emit(ResultState.Success(it))
-            }
-        } catch (e: Exception) {
-            emit(ResultState.Error(e.localizedMessage ?: "An unknown error occurred"))
-        }
-    }
-
-    override suspend fun updateAmount(balance: Double, id: Long) {
-        transactionDao.updateAmount(balance,id)
-    }
-
 
 }

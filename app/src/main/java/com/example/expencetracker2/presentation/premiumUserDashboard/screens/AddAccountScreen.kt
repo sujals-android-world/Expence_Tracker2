@@ -1,4 +1,4 @@
-package com.example.expencetracker2.presentation.transaction.screens
+package com.example.expencetracker2.presentation.premiumUserDashboard.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -21,14 +21,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.expencetracker2.data.tracsaction.local.entity.AccountEntity
-import com.example.expencetracker2.presentation.transaction.TransactionViewModel
+import com.example.expencetracker2.data.premiumDashboard.entity.AccountEntity
+import com.example.expencetracker2.presentation.premiumUserDashboard.PremiumUserDashboardViewmodel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AddAccountScreen(
     onBackClick: () -> Unit,
-    transactionViewModel: TransactionViewModel,
+    premiumUserDashboardViewmodel: PremiumUserDashboardViewmodel,
     onSaveAccount: (
         name: String,
         icon: String,
@@ -41,9 +41,9 @@ fun AddAccountScreen(
         dueDate: Int?
     ) -> Unit
 ) {
-
-    val bankAccounts = transactionViewModel.accountState.collectAsStateWithLifecycle().value.success.filter { it.accountType == "BANK" }
-
+    // 🟢 Sabhi accounts ki list State se nikalein Primary conflict check karne ke liye
+    val allAccounts = premiumUserDashboardViewmodel.accountState.collectAsStateWithLifecycle().value.success
+    val bankAccounts = remember(allAccounts) { allAccounts.filter { it.accountType == "BANK" } }
 
     val isDark = isSystemInDarkTheme()
     val context = LocalContext.current
@@ -61,6 +61,10 @@ fun AddAccountScreen(
 
     var selectedBank by remember { mutableStateOf<AccountEntity?>(null) }
     var dropdownExpanded by remember { mutableStateOf(false) }
+
+    // 🔔 Dialog state for Primary account conflict
+    var showPrimaryConflictDialog by remember { mutableStateOf(false) }
+    var existingPrimaryAccountName by remember { mutableStateOf("") }
 
     val accountTypes = listOf("CASH", "BANK", "CREDIT CARD", "DEBIT CARD", "WALLET", "UPI")
 
@@ -92,37 +96,54 @@ fun AddAccountScreen(
 
     val isValid = name.isNotBlank() && (!isBankRequired || selectedBank != null) && isCreditCardValid
 
-    val handleSave = {
+    // 🟢 Final execution helper
+    val executeSave = {
         val parsedBalance = balanceText.toDoubleOrNull() ?: 0.0
+        val icon = when (selectedType) {
+            "CASH" -> "ic_cash"
+            "BANK" -> "ic_bank"
+            "CREDIT CARD" -> "ic_credit_card"
+            "DEBIT CARD" -> "ic_debit_card"
+            "WALLET" -> "ic_wallet"
+            "UPI" -> "ic_upi"
+            else -> "ic_wallet"
+        }
+
+        val linkedId = if (isBankRequired) selectedBank?.id else null
+        val limit = if (isCreditCard) parsedCreditLimit else null
+        val statement = if (isCreditCard) parsedStatementDate else null
+        val due = if (isCreditCard) parsedDueDate else null
+
+        onSaveAccount(
+            name,
+            icon,
+            parsedBalance,
+            selectedType,
+            isPrimary,
+            linkedId,
+            limit,
+            statement,
+            due
+        )
+        Toast.makeText(context, "$selectedType Account Created!", Toast.LENGTH_SHORT).show()
+        onBackClick()
+    }
+
+    // 🟢 Check for primary conflict before saving
+    val handleSave = {
         if (isValid) {
-            val icon = when (selectedType) {
-                "CASH" -> "ic_cash"
-                "BANK" -> "ic_bank"
-                "CREDIT CARD" -> "ic_credit_card"
-                "DEBIT CARD" -> "ic_debit_card"
-                "WALLET" -> "ic_wallet"
-                "UPI" -> "ic_upi"
-                else -> "ic_wallet"
+            if (isPrimary) {
+                // Check if an account of the same type is already Primary
+                val existingPrimary = allAccounts.find { it.accountType == selectedType && it.isPrimary }
+                if (existingPrimary != null) {
+                    existingPrimaryAccountName = existingPrimary.name
+                    showPrimaryConflictDialog = true
+                } else {
+                    executeSave()
+                }
+            } else {
+                executeSave()
             }
-
-            val linkedId = if (isBankRequired) selectedBank?.id else null
-            val limit = if (isCreditCard) parsedCreditLimit else null
-            val statement = if (isCreditCard) parsedStatementDate else null
-            val due = if (isCreditCard) parsedDueDate else null
-
-            onSaveAccount(
-                name,
-                icon,
-                parsedBalance,
-                selectedType,
-                isPrimary,
-                linkedId,
-                limit,
-                statement,
-                due
-            )
-            Toast.makeText(context, "$selectedType Account Created!", Toast.LENGTH_SHORT).show()
-            onBackClick()
         }
     }
 
@@ -391,6 +412,32 @@ fun AddAccountScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // 🔔 Primary Conflict Confirmation Dialog
+        if (showPrimaryConflictDialog) {
+            AlertDialog(
+                onDismissRequest = { showPrimaryConflictDialog = false },
+                title = { Text("Change Primary Account?", fontWeight = FontWeight.Bold) },
+                text = {
+                    Text("Aapka '$existingPrimaryAccountName' pehle se Primary $selectedType hai. Kya aap ise badalkar '$name' ko Primary banana chahte hain?")
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showPrimaryConflictDialog = false
+                            executeSave()
+                        }
+                    ) {
+                        Text("Yes, Change", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showPrimaryConflictDialog = false }) {
+                        Text("Cancel", color = Color.Gray)
+                    }
+                }
+            )
         }
     }
 }

@@ -4,9 +4,12 @@ import android.content.Context
 import androidx.room.Room
 import com.example.expencetracker2.data.auth.repoimpl.AuthRepoImpl
 import com.example.expencetracker2.data.tracsaction.repoImpl.TransactionRepoImpl
-import com.example.expencetracker2.data.tracsaction.local.db.ExpenseDatabase
+import com.example.expencetracker2.data.db.ExpenseDatabase
+import com.example.expencetracker2.data.premiumDashboard.dao.PremiumDashboardDao
+import com.example.expencetracker2.data.premiumDashboard.repoImpl.PremiumUserDashboardRepoImpl
 import com.example.expencetracker2.data.tracsaction.local.dao.TransactionDao
 import com.example.expencetracker2.domain.auth.repository.AuthRepo
+import com.example.expencetracker2.domain.premiumuserDashboard.repository.PremiumUserDashboardRepo
 import com.example.expencetracker2.domain.transaction.repository.TransactionRepo
 import dagger.Binds
 import dagger.Module
@@ -78,6 +81,12 @@ abstract class AppModule {
         fun provideTransactionDao(database: ExpenseDatabase): TransactionDao {
             return database.transactionDao()
         }
+
+        @Provides
+        @Singleton
+        fun providePremiumUserDashboardDao(database: ExpenseDatabase): PremiumDashboardDao {
+            return database.premiumUserDashboardDao()
+        }
     }
 
     @Binds
@@ -87,4 +96,8 @@ abstract class AppModule {
     @Binds
     @Singleton
     abstract fun bindTransactionRepo(repoImpl: TransactionRepoImpl): TransactionRepo
+
+    @Binds
+    @Singleton
+    abstract fun bindPremiumUserDashboardRepo(repoImpl: PremiumUserDashboardRepoImpl): PremiumUserDashboardRepo
 }

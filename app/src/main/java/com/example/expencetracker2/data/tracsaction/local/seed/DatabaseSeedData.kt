@@ -1,6 +1,6 @@
 package com.example.expencetracker2.data.tracsaction.local.seed
 
-import com.example.expencetracker2.data.tracsaction.local.entity.AccountEntity
+import com.example.expencetracker2.data.premiumDashboard.entity.AccountEntity
 import com.example.expencetracker2.data.tracsaction.local.entity.MasterCategoryEntity
 import com.example.expencetracker2.data.tracsaction.local.entity.SubCategoryEntity
 

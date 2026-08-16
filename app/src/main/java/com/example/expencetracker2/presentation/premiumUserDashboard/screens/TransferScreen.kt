@@ -1,8 +1,19 @@
-package com.example.expencetracker2.presentation.transaction.screens
+package com.example.expencetracker2.presentation.premiumUserDashboard.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -10,8 +21,29 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,15 +52,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.expencetracker2.data.tracsaction.local.entity.AccountEntity
-import com.example.expencetracker2.domain.transaction.model.Transaction
-import com.example.expencetracker2.presentation.transaction.TransactionViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.expencetracker2.data.premiumDashboard.entity.AccountEntity
+import com.example.expencetracker2.domain.transaction.model.Transaction
+import com.example.expencetracker2.presentation.premiumUserDashboard.PremiumUserDashboardViewmodel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransferScreen(
-    viewModel: TransactionViewModel,
+    premiumUserDashboardViewmodel: PremiumUserDashboardViewmodel,
     onBackClick: () -> Unit,
     onNavigateToAddAccount: () -> Unit = {},
     onSaveTransfer: (
@@ -36,7 +68,7 @@ fun TransferScreen(
         accountsToUpdate: List<Pair<Long, Double>>
     ) -> Unit
 ) {
-    val account by viewModel.accountState.collectAsStateWithLifecycle()
+    val account by premiumUserDashboardViewmodel.accountState.collectAsStateWithLifecycle()
     val accountsList = account.success
 
     val isDark = isSystemInDarkTheme()

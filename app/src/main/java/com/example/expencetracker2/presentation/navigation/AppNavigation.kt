@@ -5,24 +5,26 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.expencetracker2.presentation.transaction.screens.AddAccountScreen
 import com.example.expencetracker2.presentation.auth.AuthViewModel
 import com.example.expencetracker2.presentation.auth.SignInScreen
 import com.example.expencetracker2.presentation.auth.SignUpScreen
+import com.example.expencetracker2.presentation.premiumUserDashboard.PremiumUserDashboardViewmodel
+import com.example.expencetracker2.presentation.premiumUserDashboard.screens.AddAccountScreen
+import com.example.expencetracker2.presentation.premiumUserDashboard.screens.AddIncomeScreen
+import com.example.expencetracker2.presentation.premiumUserDashboard.screens.PremiumUserDashBoard
+import com.example.expencetracker2.presentation.premiumUserDashboard.screens.TransferScreen
 import com.example.expencetracker2.presentation.transaction.TransactionViewModel
 import com.example.expencetracker2.presentation.transaction.bottomScreen.MainScreen
 import com.example.expencetracker2.presentation.transaction.screens.AddExpenseScreen
-import com.example.expencetracker2.presentation.transaction.screens.AddIncomeScreen
 import com.example.expencetracker2.presentation.transaction.screens.CustomizeQuickAccessScreen
-import com.example.expencetracker2.presentation.transaction.screens.PremiumUserDashBoard
-import com.example.expencetracker2.presentation.transaction.screens.TransferScreen
 
 
 @Composable
 fun AppNavigation(
     navHostController: NavHostController,
     authViewModel: AuthViewModel = hiltViewModel(),
-    transactionViewModel: TransactionViewModel = hiltViewModel()
+    transactionViewModel: TransactionViewModel = hiltViewModel(),
+    premiumUserDashboardViewmodel: PremiumUserDashboardViewmodel = hiltViewModel()
 ) {
 
     NavHost(navHostController, startDestination = Routes.mainScreen, builder = {
@@ -139,7 +141,8 @@ fun AppNavigation(
                 },
                 onTransferClick = {
                     navHostController.navigate(Routes.transferScreen)
-                }
+                },
+                premiumUserDashboardViewmodel = premiumUserDashboardViewmodel
             )
         }
         composable(Routes.addIncomeScreen) {
@@ -152,7 +155,7 @@ fun AppNavigation(
                         }
                     }
                 },
-                viewModel = transactionViewModel,
+                premiumUserDashboardViewmodel = premiumUserDashboardViewmodel,
                 onSaveIncome = { transaction, selectedAccountId, selectedAccountNewBalance, linkedBankId, linkedBankNewBalance, childAccountsToUpdate,  ->
                     // 1️⃣ Transaction save करो
                     transactionViewModel.insertTransaction(
@@ -169,14 +172,14 @@ fun AppNavigation(
                     )
 
                     // 2️⃣ Selected Account का बैलेंस अपडेट करो
-                    transactionViewModel.updateAccountBalance(
+                    premiumUserDashboardViewmodel.updateAccountBalance(
                         id = selectedAccountId,
                         balance = selectedAccountNewBalance
                     )
 
                     // 3️⃣ अगर Child Account (Debit Card / UPI) चुना था, तो उसके Parent Bank का बैलेंस अपडेट करो
                     if (linkedBankId != null && linkedBankNewBalance != null) {
-                        transactionViewModel.updateAccountBalance(
+                        premiumUserDashboardViewmodel.updateAccountBalance(
                             id = linkedBankId,
                             balance = linkedBankNewBalance
                         )
@@ -184,7 +187,7 @@ fun AppNavigation(
 
                     // 4️⃣ अगर Main Bank चुना था, तो उससे लिंक्ड सभी Child Accounts (Debit Cards / UPI) का बैलेंस अपडेट करो
                     childAccountsToUpdate.forEach { (childId, childNewBalance) ->
-                        transactionViewModel.updateAccountBalance(
+                        premiumUserDashboardViewmodel.updateAccountBalance(
                             id = childId,
                             balance = childNewBalance
                         )
@@ -204,7 +207,7 @@ fun AppNavigation(
 
         composable(Routes.transferScreen) {
             TransferScreen(
-                viewModel = transactionViewModel,
+                premiumUserDashboardViewmodel = premiumUserDashboardViewmodel,
                 onBackClick = { navHostController.popBackStack() },
                 onNavigateToAddAccount = { navHostController.navigate(Routes.premiumUserDashBoard) },
                 onSaveTransfer = { transaction, accountsToUpdate ->
@@ -224,7 +227,7 @@ fun AppNavigation(
                     )
 
                     // 2. Bulk Update all calculated Account Balances
-                    transactionViewModel.updateMultipleAccounts(accountsToUpdate)
+                    premiumUserDashboardViewmodel.updateMultipleAccounts(accountsToUpdate)
                 }
             )
 
@@ -234,12 +237,12 @@ fun AppNavigation(
 
 
                 AddAccountScreen(
-                    transactionViewModel = transactionViewModel,
+                    premiumUserDashboardViewmodel = premiumUserDashboardViewmodel,
                     onBackClick = {
                         navHostController.navigate(Routes.premiumUserDashBoard)
                     },
                     onSaveAccount = { accountName,icon, balance, accountType, isprimary,linkedBankId,creditLimit,statementDate,dueDate ->
-                        transactionViewModel.insertAccount(
+                        premiumUserDashboardViewmodel.insertAccount(
                             name = accountName,
                             icon = icon,
                             balance = balance,
