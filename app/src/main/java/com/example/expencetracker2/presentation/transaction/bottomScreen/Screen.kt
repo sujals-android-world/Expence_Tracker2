@@ -24,15 +24,15 @@ sealed class Screen(
 ) {
     // 1. Home Screen
     object Home : Screen(
-        route = Routes.Home, // सीधा आपके Routes ऑब्जेक्ट से आ रहा है
+        route = Routes.home, // सीधा आपके Routes ऑब्जेक्ट से आ रहा है
         title = "Home",
-        selectedIcon = Icons.Filled.Home,
+        selectedIcon = Icons.Filled.`Home`,
         unselectedIcon = Icons.Outlined.Home
     )
 
     // 2. Details Screen
     object Details : Screen(
-        route = Routes.Details,
+        route = Routes.details,
         title = "Details",
         selectedIcon = Icons.Filled.Info,
         unselectedIcon = Icons.Outlined.Info
@@ -40,7 +40,7 @@ sealed class Screen(
 
     // 3. Analytics Screen
     object Analytics : Screen(
-        route = Routes.Analytics,
+        route = Routes.analytics,
         title = "Analytics",
         selectedIcon = Icons.Filled.Analytics,
         unselectedIcon = Icons.Outlined.Analytics
@@ -48,7 +48,7 @@ sealed class Screen(
 
     // 4. Budget Screen
     object Budget : Screen(
-        route = Routes.Budget,
+        route = Routes.budget,
         title = "Budget",
         selectedIcon = Icons.Filled.AccountBalanceWallet,
         unselectedIcon = Icons.Outlined.AccountBalanceWallet

@@ -52,8 +52,8 @@ fun SignInScreen(
         if (loginState.error != null) {
             Toast.makeText(context, loginState.error, Toast.LENGTH_SHORT).show()
         } else if(loginState.success) {
-            navHostController.navigate(Routes.MainScreen) {
-                popUpTo(Routes.SignInScreen) {
+            navHostController.navigate(Routes.mainScreen) {
+                popUpTo(Routes.signInScreen) {
                     inclusive  = true
                 }
                 viewModel.resetLoginState()

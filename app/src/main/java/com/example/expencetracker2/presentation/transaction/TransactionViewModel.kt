@@ -106,7 +106,7 @@ class TransactionViewModel @Inject constructor(
         }
     }
 
-    fun insertAccount(name: String, icon :String, balance: Double, accountType: String, isPrimary: Boolean = false, linkedBankId: Long? = null)  {
+    fun insertAccount(name: String, icon :String, balance: Double, accountType: String, isPrimary: Boolean = false, linkedBankId: Long? = null,creditLimit : Double? = null, statementDate : Int? = null,dueDate : Int? = null)  {
         viewModelScope.launch {
             val account = AccountEntity(
                 name = name,
@@ -114,7 +114,10 @@ class TransactionViewModel @Inject constructor(
                 balance = balance,
                 isPrimary = isPrimary,
                 accountType = accountType,
-                linkedBankId = linkedBankId
+                linkedBankId = linkedBankId,
+                creditLimit = creditLimit,
+                statementDate = statementDate,
+                dueDate = dueDate
             )
             repository.insertAccount(account)
         }

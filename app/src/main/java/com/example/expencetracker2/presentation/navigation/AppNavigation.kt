@@ -5,6 +5,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.expencetracker2.presentation.transaction.screens.AddAccountScreen
 import com.example.expencetracker2.presentation.auth.AuthViewModel
 import com.example.expencetracker2.presentation.auth.SignInScreen
 import com.example.expencetracker2.presentation.auth.SignUpScreen
@@ -24,12 +25,12 @@ fun AppNavigation(
     transactionViewModel: TransactionViewModel = hiltViewModel()
 ) {
 
-    NavHost(navHostController, startDestination = Routes.MainScreen, builder = {
-        composable(Routes.SignUpScreen) {
+    NavHost(navHostController, startDestination = Routes.mainScreen, builder = {
+        composable(Routes.signUpScreen) {
             SignUpScreen(
                 onSkipClick = {
-                    navHostController.navigate(Routes.MainScreen) {
-                        popUpTo(Routes.SignUpScreen) { inclusive = true }
+                    navHostController.navigate(Routes.mainScreen) {
+                        popUpTo(Routes.signUpScreen) { inclusive = true }
                     }
                 },
                 onCreateAccountClick = { email , password -> authViewModel.onSignUpClick(email,password)  },
@@ -37,20 +38,20 @@ fun AppNavigation(
                 onFacebookClick = {  },
                 onAppleClick = {  },
                 onSignInClick = {
-                    navHostController.navigate(Routes.SignInScreen) {
-                        popUpTo(Routes.SignUpScreen) { inclusive = true }
+                    navHostController.navigate(Routes.signInScreen) {
+                        popUpTo(Routes.signUpScreen) { inclusive = true }
                     }
                 },
                 viewModel = authViewModel,
                 navHostController = navHostController
             )
         }
-        composable(Routes.SignInScreen) {
+        composable(Routes.signInScreen) {
             SignInScreen(
                 onSkipClick = {
-                    navHostController.navigate(Routes.MainScreen)
+                    navHostController.navigate(Routes.mainScreen)
                     {
-                        popUpTo(Routes.SignInScreen)
+                        popUpTo(Routes.signInScreen)
                         {
                             inclusive = true
                         }
@@ -60,8 +61,8 @@ fun AppNavigation(
                     authViewModel.onSignInClick(email, password)
                 },
                 onForgotPasswordClick = {},
-                onSignUpClick = { navHostController.navigate(Routes.SignUpScreen) {
-                    popUpTo(Routes.SignInScreen) {
+                onSignUpClick = { navHostController.navigate(Routes.signUpScreen) {
+                    popUpTo(Routes.signInScreen) {
                         inclusive = true
                     }
                 } },
@@ -70,9 +71,9 @@ fun AppNavigation(
                 navHostController
             )
         }
-        composable(Routes.MainScreen) {
+        composable(Routes.mainScreen) {
             MainScreen(onAddClick = {
-                navHostController.navigate(Routes.AddExpenseScreen)
+                navHostController.navigate(Routes.addExpenseScreen)
             }
                 , onCategorySelected = {}, onQuickSaveClick = { finalAmount,catId, popularId, regularId, note, mode ->
                 transactionViewModel.insertTransaction(
@@ -87,15 +88,15 @@ fun AppNavigation(
                 )
             }
             , onCustomizeClick = {
-                navHostController.navigate(Routes.CustomizeQuickAccessScreen)
+                navHostController.navigate(Routes.customizeQuickAccessScreen)
             },
                 transactionViewModel  = transactionViewModel,
                 onPremiumUserDashBoardClick = {
-                    navHostController.navigate(Routes.PremiumUserdashBoard)
+                    navHostController.navigate(Routes.premiumUserDashBoard)
                 }
             )
         }
-        composable(Routes.AddExpenseScreen) {
+        composable(Routes.addExpenseScreen) {
             AddExpenseScreen(
                 onBackClick = {
                     navHostController.popBackStack()
@@ -115,47 +116,44 @@ fun AppNavigation(
                 }
             )
         }
-        composable(Routes.CustomizeQuickAccessScreen) {
+        composable(Routes.customizeQuickAccessScreen) {
             CustomizeQuickAccessScreen(
                 onBackClick = {
-                    navHostController.navigate(Routes.MainScreen) {
-                        popUpTo(Routes.CustomizeQuickAccessScreen) {
+                    navHostController.navigate(Routes.mainScreen) {
+                        popUpTo(Routes.customizeQuickAccessScreen) {
                             inclusive = true
                         }
                     }
                 },
             )
         }
-        composable(Routes.PremiumUserdashBoard) {
+        composable(Routes.premiumUserDashBoard) {
             PremiumUserDashBoard(
                 transactionViewModel = transactionViewModel,
-                onBackClick = {
-                    navHostController.navigate(Routes.MainScreen)
+                onAddAccountClick = {
+                    navHostController.navigate(Routes.addAccountScreen)
                 },
-                onAccountClick = {  },
-                onAddAccountSave = { name, icon, balance, accountType, isPrimary , linkedBankId->
-                    transactionViewModel.insertAccount(name = name, balance = balance, accountType = accountType,isPrimary =  isPrimary, icon = icon,linkedBankId = linkedBankId)
-                },
+                onAccountClick = {},
                 onAddIncomeClick = {
-                    navHostController.navigate(Routes.AddIncomescreen)
+                    navHostController.navigate(Routes.addIncomeScreen)
                 },
                 onTransferClick = {
-                    navHostController.navigate(Routes.TransferScreen)
+                    navHostController.navigate(Routes.transferScreen)
                 }
             )
         }
-        composable(Routes.AddIncomescreen) {
+        composable(Routes.addIncomeScreen) {
 
             AddIncomeScreen(
                 onBackClick = {
-                    navHostController.navigate(Routes.PremiumUserdashBoard) {
-                        popUpTo(Routes.AddIncomescreen) {
+                    navHostController.navigate(Routes.premiumUserDashBoard) {
+                        popUpTo(Routes.addIncomeScreen) {
                             inclusive = true
                         }
                     }
                 },
                 viewModel = transactionViewModel,
-                onSaveIncome = { transaction, selectedAccountId, selectedAccountNewBalance, linkedBankId, linkedBankNewBalance, childAccountsToUpdate ->
+                onSaveIncome = { transaction, selectedAccountId, selectedAccountNewBalance, linkedBankId, linkedBankNewBalance, childAccountsToUpdate,  ->
                     // 1️⃣ Transaction save करो
                     transactionViewModel.insertTransaction(
                         transaction.amount,
@@ -195,8 +193,8 @@ fun AppNavigation(
                     navHostController.popBackStack()
                 },
                 onNavigateToAddAccount = {
-                    navHostController.navigate(Routes.PremiumUserdashBoard) {
-                        popUpTo(Routes.AddIncomescreen) {
+                    navHostController.navigate(Routes.premiumUserDashBoard) {
+                        popUpTo(Routes.addIncomeScreen) {
                             inclusive = true
                         }
                     }
@@ -204,11 +202,11 @@ fun AppNavigation(
             )
         }
 
-        composable(Routes.TransferScreen) {
+        composable(Routes.transferScreen) {
             TransferScreen(
                 viewModel = transactionViewModel,
                 onBackClick = { navHostController.popBackStack() },
-                onNavigateToAddAccount = { navHostController.navigate(Routes.PremiumUserdashBoard) },
+                onNavigateToAddAccount = { navHostController.navigate(Routes.premiumUserDashBoard) },
                 onSaveTransfer = { transaction, accountsToUpdate ->
                     // 1. Save Transaction
                     transactionViewModel.insertTransaction(
@@ -230,6 +228,33 @@ fun AppNavigation(
                 }
             )
 
+        }
+
+        composable(Routes.addAccountScreen){
+
+
+                AddAccountScreen(
+                    transactionViewModel = transactionViewModel,
+                    onBackClick = {
+                        navHostController.navigate(Routes.premiumUserDashBoard)
+                    },
+                    onSaveAccount = { accountName,icon, balance, accountType, isprimary,linkedBankId,creditLimit,statementDate,dueDate ->
+                        transactionViewModel.insertAccount(
+                            name = accountName,
+                            icon = icon,
+                            balance = balance,
+                            accountType = accountType,
+                            isPrimary = isprimary,
+                            linkedBankId = linkedBankId,
+                            creditLimit = creditLimit,
+                            statementDate = statementDate,
+                            dueDate = dueDate
+                        )
+                        navHostController.navigate(Routes.premiumUserDashBoard) {
+                            popUpTo(Routes.addAccountScreen) { inclusive = true }
+                        }
+                    }
+                )
         }
     })
 }

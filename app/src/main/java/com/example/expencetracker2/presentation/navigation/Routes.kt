@@ -1,23 +1,25 @@
 package com.example.expencetracker2.presentation.navigation
 
 object Routes {
-    const val SignUpScreen = "SignUpScreen"
-    const val SignInScreen = "SignInScreen"
-    const val Home = "Home"
+    const val signUpScreen = "signUpScreen"
+    const val signInScreen = "signInScreen"
+    const val home = "home"
 
-    const val Details = "Details"
-    const val Analytics = "Analytics"
-    const val Budget = "Budget"
-    const val MainScreen = "MainScreen"
+    const val details = "details"
+    const val analytics = "analytics"
+    const val budget = "budget"
+    const val mainScreen = "mainScreen"
 
-    const val AddExpenseScreen = "AddExpenseScreen"
+    const val addExpenseScreen = "addExpenseScreen"
 
-    const val CustomizeQuickAccessScreen = "CustomizeQuickAccessScreen"
+    const val customizeQuickAccessScreen = "customizeQuickAccessScreen"
 
-    const val PremiumUserdashBoard = "PremiumUserdashBoard"
+    const val premiumUserDashBoard = "premiumUserDashBoard"
 
-    const val AddIncomescreen = "AddIncomescreen"
+    const val addIncomeScreen = "addIncomeScreen"
 
-    const val TransferScreen = "TransferScreen"
+    const val transferScreen = "transferScreen"
+
+    const val addAccountScreen = "addAccountScreen"
 
 }
