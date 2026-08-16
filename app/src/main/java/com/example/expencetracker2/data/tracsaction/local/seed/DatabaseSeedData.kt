@@ -137,14 +137,4 @@ object DatabaseSeedData {
         SubCategoryEntity(id = 851, masterCategoryId = 8, name = "Education", iconName = "ic_education", colorHex = "#1E88E5", isDefault = true)
     )
 
-
-    val seedAccountsList = listOf(
-        AccountEntity(id = 1, name = "Cash", balance = 0.0, icon = "ic_cash", isPrimary = true, accountType = "CASH", linkedBankId = null),
-        AccountEntity(id = 2, name = "Bank Account", balance = 0.0, icon = "ic_bank", isPrimary = false, accountType = "BANK", linkedBankId = null),
-        AccountEntity(id = 3, name = "Debit Card", balance = 0.0, icon = "ic_debit_card", isPrimary = false, accountType = "DEBIT CARD", linkedBankId = 2L),
-        AccountEntity(id = 4, name = "Credit Card", balance = 0.0, icon = "ic_credit_card", isPrimary = false, accountType = "CREDIT CARD", linkedBankId = null),
-        AccountEntity(id = 5, name = "UPI", balance = 0.0, icon = "ic_upi", isPrimary = false, accountType = "UPI", linkedBankId = 2L),
-        AccountEntity(id = 6, name = "Wallet", balance = 0.0, icon = "ic_wallet", isPrimary = false, accountType = "WALLET", linkedBankId = null),
-    )
-
 }
