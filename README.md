@@ -11,7 +11,7 @@ Track income, expenses and transfers across multiple accounts, organise spending
 
 | Home | Add Expense | Analytics | Budget |
 |:---:|:---:|:---:|:---:|
-| ![Home](docs/screenshots/home.png) | ![Add Expense](docs/screenshots/add_expense.png) | ![Analytics](docs/screenshots/analytics.png) | ![Budget](docs/screenshots/budget.png) |
+| ![Home](docs/screenshots/home.jpeg) | ![Add Expense](docs/screenshots/add_expense.png) | ![Analytics](docs/screenshots/analytics.png) | ![Budget](docs/screenshots/budget.png) |
 
 ---
 
