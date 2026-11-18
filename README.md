@@ -15,6 +15,14 @@ Track income, expenses and transfers across multiple accounts, organise spending
 
 ---
 
+## 🎥 Demo
+
+
+
+https://github.com/user-attachments/assets/2af16048-56be-4a86-be00-66113369b9e7
+
+
+
 ## ✨ Features
 
 - **Add income, expense and transfer** entries with amount, note, date and payment method
