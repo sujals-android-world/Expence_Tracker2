@@ -9,7 +9,6 @@ Track income, expenses and transfers across multiple accounts, organise spending
 
 ## 📸 Screenshots
 
-<!-- Put your screenshots in docs/screenshots/ and update the file names below -->
 | Home | Add Expense | Analytics | Budget |
 |:---:|:---:|:---:|:---:|
 | ![Home](docs/screenshots/home.png) | ![Add Expense](docs/screenshots/add_expense.png) | ![Analytics](docs/screenshots/analytics.png) | ![Budget](docs/screenshots/budget.png) |
@@ -80,7 +79,7 @@ app/
 
 1. Clone the repo
    ```bash
-   git clone https://github.com/sujals-android-world/<repo-name>.git
+   git clone https://github.com/sujals-android-world/<Expence_Tracker2>.git
    ```
 2. Open it in **Android Studio** (latest stable version)
 3. Let Gradle sync, then run on an emulator or a real device (min SDK as set in `build.gradle.kts`)
@@ -106,7 +105,6 @@ Get the latest APK from the [**Releases**](../../releases) section and install i
 Android Developer (Kotlin, Jetpack Compose)
 
 - GitHub: [sujals-android-world](https://github.com/sujals-android-world)
-- LinkedIn: <!-- add your LinkedIn URL here -->
 - Email: sujalbhaibhatiya123@gmail.com
 
 ---
